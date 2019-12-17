@@ -10,23 +10,29 @@ import Feature from 'ol/Feature'
 import { bindMapToTimeWidget } from './bridge'
 
 export function init() {
+  const layerStyle = {
+    variables: {
+      min: -Infinity,
+      max: Infinity,
+    },
+    filter: ['between', ['get', 'date'], ['var', 'min'], ['var', 'max']],
+    symbol: {
+      symbolType: 'circle',
+      size: ['interpolate', ['linear'], ['get', 'magnitude'], 2.5, 4, 5, 20],
+      color: [
+        'case',
+        ['<', ['get', 'depth'], 0],
+        'rgb(223,22,172)',
+        'rgb(223,113,7)',
+      ],
+      opacity: 0.5,
+    },
+  }
   const vectorLayer = new WebGLPointsLayer({
     source: new VectorSource({
       attributions: 'USGS',
     }),
-    style: {
-      symbol: {
-        symbolType: 'circle',
-        size: ['interpolate', ['linear'], ['get', 'magnitude'], 2.5, 4, 5, 20],
-        color: [
-          'case',
-          ['<', ['get', 'depth'], 0],
-          'rgb(223,22,172)',
-          'rgb(223,113,7)',
-        ],
-        opacity: 0.5,
-      },
-    },
+    style: layerStyle,
   })
 
   const view = new View({
@@ -56,7 +62,13 @@ export function init() {
   const updateWidget = bindMapToTimeWidget(
     olMap,
     vectorLayer.getSource(),
-    timeWidget
+    timeWidget,
+    'date',
+    (min, max) => {
+      layerStyle.variables.min = min || -Infinity
+      layerStyle.variables.max = max || Infinity
+      olMap.render()
+    }
   )
 
   // load map data
