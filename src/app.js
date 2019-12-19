@@ -59,18 +59,6 @@ export function init() {
 
   const timeWidget = document.querySelector('as-time-series-widget')
 
-  const updateWidget = bindMapToTimeWidget(
-    olMap,
-    vectorLayer.getSource(),
-    timeWidget,
-    'date',
-    (min, max) => {
-      layerStyle.variables.min = min || -Infinity
-      layerStyle.variables.max = max || Infinity
-      olMap.render()
-    }
-  )
-
   // load map data
   fetch(
     'https://raw.githubusercontent.com/uber-web/kepler.gl-data/master/earthquakes/data.csv'
@@ -103,6 +91,16 @@ export function init() {
       }
 
       vectorLayer.getSource().addFeatures(features)
-      updateWidget()
+      bindMapToTimeWidget(
+        olMap,
+        vectorLayer.getSource(),
+        timeWidget,
+        'date',
+        (min, max) => {
+          layerStyle.variables.min = min || -Infinity
+          layerStyle.variables.max = max || Infinity
+          olMap.render()
+        }
+      )
     })
 }

@@ -1,7 +1,14 @@
-import { generateBuckets } from './aggregation'
-import { debounce } from 'throttle-debounce'
+import { debounce, throttle } from 'throttle-debounce'
+import AggregationWorker from './aggregation.worker'
+import GeoJSON from 'ol/format/GeoJSON'
+import { transformExtent } from 'ol/proj'
 
 const ANIM_SPEED = 0.1 // full cycle by second
+
+const geojson = new GeoJSON({
+  featureProjection: 'EPSG:3857',
+  dataProjection: 'EPSG:4326',
+})
 
 /**
  *
@@ -18,14 +25,41 @@ export function bindMapToTimeWidget(
   attributeName,
   updateSelection
 ) {
-  function updateTimeWidget() {
-    const features = source.getFeaturesInExtent(map.getView().calculateExtent())
-    widget.data = generateBuckets(features, attributeName, 20)
-    if (!widget.backgroundData.length) {
-      widget.backgroundData = widget.data
+  const worker = new AggregationWorker()
+
+  // send source content to worker
+  let start = performance.now()
+  worker.postMessage({
+    type: 'features',
+    features: geojson.writeFeaturesObject(source.getFeatures()),
+  })
+  console.log(`Took ${performance.now() - start} ms to send features to worker`)
+
+  worker.addEventListener('message', event => {
+    const type = event.data.type
+    const data = event.data
+    switch (type) {
+      case 'buckets':
+        widget.data = data.buckets
+        if (!widget.backgroundData.length) {
+          widget.backgroundData = widget.data
+        }
     }
+  })
+
+  function updateTimeWidget() {
+    worker.postMessage({
+      type: 'buckets',
+      extent: transformExtent(
+        map.getView().calculateExtent(),
+        'EPSG:3857',
+        'EPSG:4326'
+      ),
+      attributeName: 'date',
+    })
   }
-  const throttledUpdate = debounce(200, updateTimeWidget)
+  updateTimeWidget()
+  const throttledUpdate = throttle(500, updateTimeWidget)
 
   // bind view to time widget
   map.getView().on(['change:center', 'change:resolution'], throttledUpdate)

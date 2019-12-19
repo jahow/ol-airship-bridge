@@ -20,6 +20,7 @@
     "prettier": "^1.18.2",
     "webpack": "^4.36.1",
     "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.7.2"
+    "webpack-dev-server": "^3.7.2",
+    "worker-loader": "^2.0.0"
   }
 }
