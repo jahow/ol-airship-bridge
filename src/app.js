@@ -46,9 +46,9 @@ export function init() {
       new TileLayer({
         source: new XYZ({
           urls: [
-            'http://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'http://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'http://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
           ],
           crossOrigin: 'anonymous',
         }),
