@@ -81,7 +81,7 @@ export function init() {
 
         features.push(
           new Feature({
-            date: new Date(line[0]),
+            date: new Date(line[0].replace(/\..+$/, '')), // remove trailing fraction in date
             depth: parseInt(line[3]),
             magnitude: parseInt(line[4]),
             geometry: new Point(coords),
