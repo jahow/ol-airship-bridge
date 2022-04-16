@@ -36,8 +36,9 @@ export function init() {
   })
 
   const view = new View({
-    center: fromLonLat([-122.297374, 37.355579]),
-    zoom: 5.55,
+    // https://www.google.com/search?q=seoul+latitude+and+longitude&sxsrf=APq-WBtdNavfwS3YFChajC-2QP0CRh2jYA%3A1650110457671&ei=-a9aYtS2KKCv2roPprqA8Aw&oq=seoul+latitude+&gs_lcp=Cgdnd3Mtd2l6EAMYADIFCAAQkQIyBQgAEIAEMgUIABDLATIGCAAQFhAeOgcIIxCwAxAnOgcIABBHELADOgQIIxAnOgcILhDUAhBDOgsILhCABBDHARDRAzoICC4Q1AIQkQI6CwguEMcBENEDEJECOgsILhCABBDHARCjAjoFCC4QgAQ6BAgAEEM6CwguEIAEEMcBEK8BSgQIQRgASgQIRhgAUJIKWI4mYPwuaAFwAXgAgAGWAYgBtAmSAQMwLjmYAQCgAQHIAQrAAQE&sclient=gws-wiz
+    center: fromLonLat([126.9780, 37.5665]), // Seoul latitude and longitude 
+    zoom: 12.15,
   })
   const olMap = new Map({
     view,
@@ -61,7 +62,7 @@ export function init() {
 
   // load map data
   fetch(
-    'https://raw.githubusercontent.com/uber-web/kepler.gl-data/master/earthquakes/data.csv'
+    'https://gist.githubusercontent.com/tucan9389/ff4a03ddfa4ecb7e7630252ca8998173/raw/47b291c0ad4e0547d535ac9ac629c250dd703af7/%25E1%2584%2589%25E1%2585%25A5%25E1%2584%258B%25E1%2585%25AE%25E1%2586%25AF%25E1%2584%2590%25E1%2585%25B3%25E1%2586%25A8%25E1%2584%2587%25E1%2585%25A7%25E1%2586%25AF%25E1%2584%2589%25E1%2585%25B5%2520(%25E1%2584%258B%25E1%2585%25A1%25E1%2586%25AB%25E1%2584%2589%25E1%2585%25B5%25E1%2586%25B7%25E1%2584%258B%25E1%2585%25B5)%2520CCTV%2520%25E1%2584%2589%25E1%2585%25A5%25E1%2586%25AF%25E1%2584%258E%25E1%2585%25B5%2520%25E1%2584%2592%25E1%2585%25A7%25E1%2586%25AB%25E1%2584%2592%25E1%2585%25AA%25E1%2586%25BC.csv'
   )
     .then(response => response.text())
     .then(csv => {
@@ -71,9 +72,19 @@ export function init() {
 
       while ((curIndex = csv.indexOf('\n', prevIndex)) !== -1) {
         var line = csv.substr(prevIndex, curIndex - prevIndex).split(',')
-        prevIndex = curIndex + 1
+        /*
+        // console.log(line)
+        0 "자치구",
+        1 "안심 주소",
+        2 "CCTV 용도",
+        3 "위도",
+        4 "경도",
+        5 "CCTV 수량",
+        6 "수정 일시"
+        */
 
-        var coords = fromLonLat([parseFloat(line[2]), parseFloat(line[1])])
+        prevIndex = curIndex + 1
+        var coords = fromLonLat([parseFloat(line[4].replaceAll('"', '')), parseFloat(line[3].replaceAll('"', ''))])
         if (isNaN(coords[0]) || isNaN(coords[1])) {
           // guard against bad data
           continue
@@ -81,11 +92,11 @@ export function init() {
 
         features.push(
           new Feature({
-            date: new Date(line[0].replace(/\..+$/, '')), // remove trailing fraction in date
-            depth: parseInt(line[3]),
-            magnitude: parseInt(line[4]),
+            date: new Date(line[6].replaceAll('"', '')), // remove trailing fraction in date
+            depth: 4, //parseInt(line[3]),
+            magnitude: parseInt(line[5].replaceAll('"', '')), // 2, // parseInt(line[4]),
             geometry: new Point(coords),
-            eventId: parseInt(line[11]),
+            eventId: curIndex // parseInt(line[11]),
           })
         )
       }
